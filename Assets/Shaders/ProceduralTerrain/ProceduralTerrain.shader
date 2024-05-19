@@ -2,11 +2,11 @@ Shader "Devutrino/ProceduralTerrain"
 {
     Properties
     {
-        [KeywordEnum(SimplexNoise,PerlinNoise)] _Noise("NoiseType",int) = 0
+        [KeywordEnum(SimplexNoise,PerlinNoise)] _Noise("NoiseType", int) = 0
         _NoiseSmoothness("NoiseSmoothness", Float) = 100.0
-        _HeightMultiplier ("Height Multiplier", Float) = 1.0
-        _Color ("Color", Color) = (1,1,1,1)
-        _MainTex ("Texture", 2D) = "white" {}
+        _HeightMultiplier("Height Multiplier", Float) = 1.0
+        _Color("Color", Color) = (1,1,1,1)
+        _MainTex("Texture", 2D) = "white" {}
         _BaseColor("Base Color", color) = (1,1,1,1)
         _Smoothness("Smoothness", Range(0,1)) = 0
         _Metallic("Metallic", Range(0,1)) = 0
@@ -21,10 +21,13 @@ Shader "Devutrino/ProceduralTerrain"
             #pragma vertex vert
             #pragma fragment frag
             #pragma multi_compile _NOISE_SIMPLEXNOISE _NOISE_PERLINNOISE
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _ADDITIONAL_LIGHT_SHADOWS _SHADOWS_SOFT
 
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"            
             #include "Packages/jp.keijiro.noiseshader/Shader/ClassicNoise2D.hlsl"
             #include "Packages/jp.keijiro.noiseshader/Shader/SimplexNoise2D.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
 
             struct VertexInput
             {
@@ -43,6 +46,7 @@ Shader "Devutrino/ProceduralTerrain"
                 float3 viewDir : TEXCOORD3;
                 DECLARE_LIGHTMAP_OR_SH(lightmapUV, vertexSH, 4);
                 float perlinHeight : TEXCOORD5;
+                float4 shadowCoord : TEXCOORD6; // Shadow coordinates
             };
 
             sampler2D _MainTex;
@@ -61,14 +65,13 @@ Shader "Devutrino/ProceduralTerrain"
 
                 float height = 0.0f;
                 #ifdef _NOISE_SIMPLEXNOISE
-                    height = SimplexNoise(o.positionWS.xz/_NoiseSmoothness); //This is a hyperparameter
+                    height = SimplexNoise(o.positionWS.xz/_NoiseSmoothness); // This is a hyperparameter
                 #else
-                    height = ClassicNoise(o.positionWS.xz/_NoiseSmoothness); //This is a hyperparameter
+                    height = ClassicNoise(o.positionWS.xz/_NoiseSmoothness); // This is a hyperparameter
                 #endif
                 o.perlinHeight = height;
                 o.positionWS.y += height * _HeightMultiplier;
                 o.vertex = TransformWorldToHClip(o.positionWS);
-
 
                 OUTPUT_LIGHTMAP_UV( v.texcoord1, unity_LightmapST, o.lightmapUV );
                 OUTPUT_SH(o.normalWS.xyz, o.vertexSH );
@@ -84,6 +87,7 @@ Shader "Devutrino/ProceduralTerrain"
                 inputdata.normalWS = normalize(i.normalWS);
                 inputdata.viewDirectionWS = i.viewDir;
                 inputdata.bakedGI = SAMPLE_GI( i.lightmapUV, i.vertexSH, inputdata.normalWS );
+                inputdata.shadowCoord = TransformWorldToShadowCoord(i.positionWS); //URP will handle the rest! :)
 
                 SurfaceData surfacedata;
                 surfacedata.albedo = _BaseColor;
@@ -96,6 +100,7 @@ Shader "Devutrino/ProceduralTerrain"
                 surfacedata.alpha = 0;
                 surfacedata.clearCoatMask = 0;
                 surfacedata.clearCoatSmoothness = 0;
+
                 return UniversalFragmentPBR(inputdata, surfacedata);
             }
             ENDHLSL
