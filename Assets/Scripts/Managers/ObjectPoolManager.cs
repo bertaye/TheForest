@@ -16,9 +16,15 @@ public class ObjectPoolManager : MonoBehaviour
     [SerializeField] GameObject TreePrefab;
     [SerializeField] GameObject RockPrefab;
     [SerializeField] GameObject GrassPrefab;
-    [SerializeField] int TreePoolSize;
-    [SerializeField] int RockPoolSize;
-    [SerializeField] int GrassPoolSize;
+    [SerializeField] int treePoolSize;
+    [SerializeField] int rockPoolSize;
+    [SerializeField] int grassPoolSize;
+
+    public int TreePoolSize { get => treePoolSize; }
+    public int RockPoolSize { get => rockPoolSize; }
+    public int GrassPoolSize { get => grassPoolSize; }
+
+
 #if BUILTIN_OBJECT_POOL
     ObjectPool<GameObject> TreePool;
     ObjectPool<GameObject> RockPool;
@@ -66,6 +72,16 @@ public class ObjectPoolManager : MonoBehaviour
         #endif
     }
 
+    public void ReturnTreeToPool(GameObject tree)
+    {
+        #if BUILTIN_OBJECT_POOL
+        TreePool.Release(tree);
+        //TODO: #else
+        TreePool_Legacy.ReturnToPool(tree);
+        #endif
+        return;
+    }
+
     public GameObject GetRock()
     {
         #if BUILTIN_OBJECT_POOL
@@ -73,6 +89,16 @@ public class ObjectPoolManager : MonoBehaviour
         //TODO: #else
         return RockPool_Legacy.RetrieveFromPool();
         #endif
+    }
+
+    public void ReturnRockToPool(GameObject rock)
+    {
+        #if BUILTIN_OBJECT_POOL
+        RockPool.Release(rock);
+        //TODO: #else
+        RockPool_Legacy.ReturnToPool(rock);
+        #endif
+        return;
     }
 
     public GameObject GetGrass()
@@ -84,6 +110,16 @@ public class ObjectPoolManager : MonoBehaviour
         #endif
     }
 
+    public void ReturnGrassToPool(GameObject grass)
+    {
+        #if BUILTIN_OBJECT_POOL
+        GrassPool.Release(grass);
+        //TODO: #else
+        GrassPool_Legacy.ReturnToPool(grass);
+        #endif
+        return;
+    }
+
     void InitializeObjectPools()
     {
 #if BUILTIN_OBJECT_POOL
@@ -93,7 +129,7 @@ public class ObjectPoolManager : MonoBehaviour
             actionOnRelease : (obj) => { obj.SetActive(false); },
             actionOnDestroy : (obj) => { Destroy(obj); },
             collectionCheck : true,
-            defaultCapacity : TreePoolSize,
+            defaultCapacity : treePoolSize,
             maxSize : 10000
             );
 
@@ -116,7 +152,7 @@ public class ObjectPoolManager : MonoBehaviour
                                     },
             actionOnDestroy: (obj) => { Destroy(obj); },
             collectionCheck: true,
-            defaultCapacity: RockPoolSize,
+            defaultCapacity: rockPoolSize,
             maxSize: 10000
             );
 
@@ -126,7 +162,7 @@ public class ObjectPoolManager : MonoBehaviour
             actionOnRelease: (obj) => { obj.SetActive(false); },
             actionOnDestroy: (obj) => { Destroy(obj); },
             collectionCheck: true,
-            defaultCapacity: RockPoolSize,
+            defaultCapacity: rockPoolSize,
             maxSize: 10000
             );
 //TODO: #else
@@ -147,7 +183,7 @@ public class ObjectPoolManager : MonoBehaviour
                     poolable.OnReturnToPool();
                 }
             },
-            poolSize: TreePoolSize
+            poolSize: treePoolSize
             );
 
         RockPool_Legacy = new GenericObjectPool<GameObject>(
@@ -168,7 +204,8 @@ public class ObjectPoolManager : MonoBehaviour
                 {
                     poolable.OnReturnToPool();
                 }
-            }, poolSize: RockPoolSize
+            }, 
+            poolSize: rockPoolSize
             );
 
         GrassPool_Legacy = new GenericObjectPool<GameObject>(
@@ -189,7 +226,8 @@ public class ObjectPoolManager : MonoBehaviour
                 {
                     poolable.OnReturnToPool();
                 }
-            }, poolSize: GrassPoolSize
+            }, 
+            poolSize: grassPoolSize
             );
 #endif
     }
