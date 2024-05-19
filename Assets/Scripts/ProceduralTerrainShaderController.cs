@@ -51,6 +51,7 @@ public class ProceduralTerrainShaderController : MonoBehaviour
             _Color ("Color", Color) = (1,1,1,1)
          */
         perlinTerrainMaterial.SetFloat("_HeightMultiplier", heightMultiplier);
+        perlinTerrainMaterial.EnableKeyword("_MAIN_LIGHT_SHADOWS");
 
     }
 

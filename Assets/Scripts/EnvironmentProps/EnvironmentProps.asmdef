@@ -1,0 +1,16 @@
+{
+    "name": "EnvironmentProps",
+    "rootNamespace": "",
+    "references": [
+        "GUID:813482bf775851b4c848f31ec0a9c92b"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
