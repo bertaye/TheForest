@@ -1,0 +1,20 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+#include "Packages/jp.keijiro.noiseshader/Shader/ClassicNoise2D.hlsl"
+#include "Packages/jp.keijiro.noiseshader/Shader/SimplexNoise2D.hlsl"
+
+cbuffer PositionBuffer
+{
+    float3 worldPosition;
+    float smoothness;
+};
+
+RWStructuredBuffer<float> resultBuffer;
+
+
+[numthreads(1,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    resultBuffer[0] = ClassicNoise(worldPosition.xz / smoothness);
+}
