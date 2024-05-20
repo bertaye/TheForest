@@ -61,7 +61,7 @@ Shader "Devutrino/ProceduralTerrain"
                 o.positionWS = TransformObjectToWorld(v.vertex.xyz);
                 o.normalWS = TransformObjectToWorldNormal(v.normal.xyz);
                 o.viewDir = normalize(_WorldSpaceCameraPos - o.positionWS);
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+                o.uv = v.uv; //TRANSFORM_TEX(v.uv, _MainTex);
 
                 float height = 0.0f;
                 #ifdef _NOISE_SIMPLEXNOISE
@@ -81,7 +81,7 @@ Shader "Devutrino/ProceduralTerrain"
 
             half4 frag (v2f i) : SV_Target
             {
-                half4 col = tex2D(_MainTex, i.uv);
+                half4 col = tex2D(_MainTex,i.positionWS.xz/_NoiseSmoothness);
                 InputData inputdata = (InputData)0;
                 inputdata.positionWS = i.positionWS;
                 inputdata.normalWS = normalize(i.normalWS);
@@ -90,7 +90,7 @@ Shader "Devutrino/ProceduralTerrain"
                 inputdata.shadowCoord = TransformWorldToShadowCoord(i.positionWS); //URP will handle the rest! :)
 
                 SurfaceData surfacedata;
-                surfacedata.albedo = _BaseColor;
+                surfacedata.albedo = _BaseColor*col;
                 surfacedata.specular = 0;
                 surfacedata.metallic = _Metallic;
                 surfacedata.smoothness = _Smoothness;

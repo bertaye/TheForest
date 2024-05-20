@@ -1,0 +1,36 @@
+#pragma kernel CSMain2
+
+#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+struct Vertex
+{
+    float3 position;
+    float3 normal;
+    float2 uv;
+};
+
+RWStructuredBuffer<Vertex> vertices;
+
+Texture2D<float4> _NoiseTex;
+SamplerState linearClampSampler;
+
+float _HeightMultiplier;
+float4x4 _ModelMatrix;
+
+[numthreads(256, 1, 1)]
+void CSMain2(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= vertices.Length)
+        return;
+
+    Vertex vertex = vertices[id.x];
+
+    float2 uv = vertex.uv;
+    
+
+    float height = _NoiseTex.SampleLevel(linearClampSampler, uv, 0).r;
+
+    vertex.position.y += height * _HeightMultiplier;
+
+    vertices[id.x] = vertex;
+}

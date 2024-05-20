@@ -1,0 +1,45 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#include "Packages/jp.keijiro.noiseshader/Shader/ClassicNoise2D.hlsl"
+#include "Packages/jp.keijiro.noiseshader/Shader/SimplexNoise2D.hlsl"
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+struct Vertex
+{
+    float3 position;
+    float3 normal;
+    float2 uv;
+};
+
+RWStructuredBuffer<Vertex> vertices;
+
+float _HeightMultiplier;
+float _NoiseSmoothness;
+int _NoiseType; // 0 for SimplexNoise, 1 for PerlinNoise
+float4x4 _ModelMatrix;
+
+[numthreads(256, 1, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= vertices.Length)
+        return;
+
+    Vertex vertex = vertices[id.x];
+    float3 worldPosition = mul(_ModelMatrix, float4(vertex.position, 1.0)).xyz;
+    float2 positionXZ = worldPosition.xz / _NoiseSmoothness;
+
+    float height = 0.0f;
+    if (_NoiseType == 0)
+    {
+        height = SimplexNoise(positionXZ);
+    }
+    else
+    {
+        height = ClassicNoise(positionXZ);
+    }
+
+    vertex.position.y = height * _HeightMultiplier;
+
+    vertices[id.x] = vertex;
+}
