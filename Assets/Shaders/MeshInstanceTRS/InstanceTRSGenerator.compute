@@ -1,0 +1,48 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#include "Packages/jp.keijiro.noiseshader/Shader/ClassicNoise2D.hlsl"
+#include "Packages/jp.keijiro.noiseshader/Shader/SimplexNoise2D.hlsl"
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+
+
+struct ObjToWorld
+{
+    float4x4 objToWorld;
+};
+
+cbuffer ExternalParams
+{
+    float4x4 objToWorldMatrix;
+    float smoothness;
+    float threshold;
+};
+
+RWStructuredBuffer<int> counterBuffer;
+RWStructuredBuffer<float3> objectVertices;
+RWStructuredBuffer<float4x4> trsMatrices;
+
+[numthreads(10,10,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    uint idx = id.x;
+    
+    float3 worldPos = mul(objToWorldMatrix, float4(objectVertices[idx], 1.0));
+    
+    float height = SimplexNoise(worldPos.xz / smoothness);
+    
+    //float randomValue = frac(sin(dot(worldPos.xz, float2(12.9898, 78.233))) * 43758.5453);
+
+    if (height > threshold)
+    {
+        float4x4 trsMatrix = float4x4(
+            1.0, 0.0, 0.0, worldPos.x,
+            0.0, 1.0, 0.0, height,
+            0.0, 0.0, 1.0, worldPos.z,
+            0.0, 0.0, 0.0, 1.0
+        );
+        
+        trsMatrices[counterBuffer[0]] = trsMatrix;
+        InterlockedAdd(counterBuffer[0], 1);
+    }
+}
