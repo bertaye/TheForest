@@ -6,6 +6,7 @@ public class CameraHeightController : MonoBehaviour
     [SerializeField] ComputeShader SimplexNoiseHeightShader;
     [SerializeField] ComputeShader PerlinNoiseHeightShader;
     [SerializeField][Tooltip("Must be same with Noise Shader's Smoothness value")] float NoiseSmoothness = 50.0f;
+    [SerializeField][Tooltip("Must be same with TerrainDetailControllers'")] float HeightMultipler = 1.0f;
     [SerializeField] float HeightLimitOffset = 0.2f;
 
     private ComputeBuffer resultBuffer;
@@ -52,10 +53,14 @@ public class CameraHeightController : MonoBehaviour
 
         moveUpdateVector = (transform.right * moveRight + transform.forward * moveForward).normalized;
         gameObject.transform.position += moveUpdateVector;
-        float heightLimit = GetHeightAtPosition(gameObject.transform.position, NoiseSmoothness);
-        if(gameObject.transform.position.y <= 0.5f && (gameObject.transform.position.y - HeightLimitOffset < heightLimit))
+        if(gameObject.transform.position.y <= HeightValueForCheck)
         {
-            gameObject.transform.position = new Vector3(gameObject.transform.position.x, heightLimit + HeightLimitOffset, gameObject.transform.position.z);
+            float heightLimit = GetHeightAtPosition(gameObject.transform.position, NoiseSmoothness);
+            heightLimit *= HeightMultipler;
+            if(gameObject.transform.position.y - HeightLimitOffset < heightLimit)
+            {
+                gameObject.transform.position = new Vector3(gameObject.transform.position.x, heightLimit + HeightLimitOffset, gameObject.transform.position.z);
+            }
         }
     }
 
