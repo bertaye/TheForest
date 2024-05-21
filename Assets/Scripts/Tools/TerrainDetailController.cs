@@ -21,6 +21,7 @@ public class TerrainDetailController : MonoBehaviour
     [SerializeField]
     [Range(1, 1000)]
     private int yResolution = 10;
+    private Vector3[] vertices;
 
     public float PlaneWidth
     {
@@ -55,13 +56,17 @@ public class TerrainDetailController : MonoBehaviour
     {
         GenerateMesh();
     }
+    public Vector3[] GetVertices()
+    {
+        return vertices;
+    }
     private void GenerateMesh()
     {
         MeshFilter meshFilter = GetComponent<MeshFilter>();
         Mesh mesh = new Mesh();
 
         int vertCount = (xResolution + 1) * (yResolution + 1);
-        Vector3[] vertices = new Vector3[vertCount];
+        vertices = new Vector3[vertCount];
         Vector2[] uv = new Vector2[vertCount];
         int[] triangles = new int[xResolution * yResolution * 6];
 
