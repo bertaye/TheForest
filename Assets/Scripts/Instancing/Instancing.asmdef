@@ -1,3 +1,16 @@
 {
-	"name": "Instancing"
+    "name": "Instancing",
+    "rootNamespace": "",
+    "references": [
+        "GUID:c7e79aa613d374045a5e794f4dc09848"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

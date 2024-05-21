@@ -9,6 +9,7 @@ public class TerrainGPUInstancing : MonoBehaviour
     [SerializeField] Mesh instanceMesh;
     public static TerrainGPUInstancing Instance { get; private set; }
     List<Matrix4x4> instanceMatrices = new List<Matrix4x4>();
+    Matrix4x4[] _instanceMatrices = new Matrix4x4[256];
     private void Awake()
     {
         if (Instance == null)
